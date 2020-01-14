@@ -1,0 +1,32 @@
+{
+    "name": "burki/exist-db-rpc-client",
+    "type": "library",
+    "description": "A client for querying and transforming results from eXist-db via XML RPC",
+    "keywords": [
+        "eXist-db",
+        "xquery",
+        "xslt",
+        "php",
+        "xmlrpc"
+    ],
+    "homepage": "https://github.com/burki/exist-db-rpc-client",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Daniel Burckhardt",
+            "email": "burckhardtd@geschichte.hu-berlin.de"
+        }
+    ],
+    "require": {
+        "lstrojny/fxmlrpc": "^0.15",
+        "php-http/guzzle6-adapter": "^2.0",
+        "php-http/message": "^1.8",
+        "guzzlehttp/psr7": "^1.6"
+    },
+    "autoload": {
+        "psr-4": {
+            "ExistDbRpc\\": "src"
+        }
+    },
+    "minimum-stability": "stable"
+}
