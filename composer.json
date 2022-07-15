@@ -1,5 +1,5 @@
 {
-    "name": "burki/exist-db-rpc-client",
+    "name": "ghi-dc/exist-db-rpc-client",
     "type": "library",
     "description": "A client for querying and transforming results from eXist-db via XML RPC",
     "keywords": [
@@ -9,12 +9,12 @@
         "php",
         "xmlrpc"
     ],
-    "homepage": "https://github.com/burki/exist-db-rpc-client",
+    "homepage": "https://github.com/ghi-dc/exist-db-rpc-client",
     "license": "MIT",
     "authors": [
         {
             "name": "Daniel Burckhardt",
-            "email": "burckhardtd@geschichte.hu-berlin.de"
+            "email": "daniel.burckhardtd@ghi-dc.org"
         }
     ],
     "require": {
