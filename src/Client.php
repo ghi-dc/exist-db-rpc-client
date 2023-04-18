@@ -63,7 +63,7 @@ class Client
             $this->uri,
             new \fXmlRpc\Transport\HttpAdapterTransport(
                 new \Http\Message\MessageFactory\GuzzleMessageFactory(), // alternative is DiactorosMessageFactory
-                new \Http\Adapter\Guzzle6\Client($httpClient)
+                new \Http\Adapter\Guzzle7\Client($httpClient)
             )
         );
 

@@ -14,14 +14,14 @@
     "authors": [
         {
             "name": "Daniel Burckhardt",
-            "email": "daniel.burckhardtd@ghi-dc.org"
+            "email": "burckhardtd@ghi-dc.org"
         }
     ],
     "require": {
-        "lstrojny/fxmlrpc": "^0.15",
-        "php-http/guzzle6-adapter": "^2.0",
-        "php-http/message": "^1.8",
-        "guzzlehttp/psr7": "^1.6"
+        "lstrojny/fxmlrpc": "^0.22",
+        "php-http/guzzle7-adapter": "^1.0",
+        "php-http/message": "^1.13",
+        "guzzlehttp/psr7": "^2.5"
     },
     "autoload": {
         "psr-4": {
