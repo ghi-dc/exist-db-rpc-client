@@ -62,7 +62,8 @@ class Client
         $client = new \fXmlRpc\Client(
             $this->uri,
             new \fXmlRpc\Transport\HttpAdapterTransport(
-                new \Http\Message\MessageFactory\GuzzleMessageFactory(), // alternative is DiactorosMessageFactory
+                new \GuzzleHttp\Psr7\HttpFactory(), // alternative is \Http\Message\MessageFactory\DiactorosMessageFactory
+                new \GuzzleHttp\Psr7\HttpFactory(), // alternative is \Http\Message\StreamFactory\DiactorosStreamFactory
                 new \Http\Adapter\Guzzle7\Client($httpClient)
             )
         );
