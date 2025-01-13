@@ -16,7 +16,7 @@ class Client
      *
      * @var
      */
-    protected $connection;
+    protected $client;
     protected $options;
     protected $collection = null;
 
@@ -56,7 +56,7 @@ class Client
                        .$options['host'].':'.$options['port'].$options['path'];
         }
 
-        $this->conn = null;
+        $this->client = null;
 
         $httpClient = new \GuzzleHttp\Client();
         $client = new \fXmlRpc\Client(
