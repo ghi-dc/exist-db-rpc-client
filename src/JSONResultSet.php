@@ -24,7 +24,7 @@ class JSONResultSet extends ResultSet
         return $doc;
     }
 
-    public function current()
+    public function current(): mixed
     {
         $doc = json_decode($this->retrieve()->getDecoded(), true);
 

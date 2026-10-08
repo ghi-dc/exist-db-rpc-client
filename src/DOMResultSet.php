@@ -26,7 +26,7 @@ class DOMResultSet extends ResultSet
         return $doc;
     }
 
-    public function current()
+    public function current(): \DOMDocument
     {
         $doc = new \DOMDocument();
         $doc->loadXML($this->retrieve());

@@ -19,7 +19,7 @@ class SimpleXMLResultSet extends ResultSet
         return $doc;
     }
 
-    public function current()
+    public function current(): \SimpleXMLElement|false
     {
         $doc = simplexml_load_string($this->retrieve()->scalar);
 

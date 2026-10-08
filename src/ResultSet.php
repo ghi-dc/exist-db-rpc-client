@@ -50,29 +50,29 @@ class ResultSet implements \Iterator
         return $results;
     }
 
-    public function rewind()
+    public function rewind(): void
     {
         $this->currentHit = 0;
     }
 
-    public function current()
+    public function current(): mixed
     {
         $result = $this->retrieve();
 
         return $result->scalar;
     }
 
-    public function key()
+    public function key(): mixed
     {
         return $this->currentHit;
     }
 
-    public function next()
+    public function next(): void
     {
         $this->hasMoreHits = ++$this->currentHit < $this->hits;
     }
 
-    public function valid()
+    public function valid(): bool
     {
         return $this->hasMoreHits;
     }
