@@ -8,7 +8,7 @@ class ResultSet implements \Iterator
     protected $hits;
     protected $currentHit;
     protected $hasMoreHits;
-    protected $resultId;
+    protected final $resultId;
     protected $options;
 
     public function __construct($client, $resultId, $options)
