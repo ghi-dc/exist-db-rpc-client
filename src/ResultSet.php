@@ -34,9 +34,9 @@ class ResultSet implements \Iterator
     protected function retrieve()
     {
         return $this->client->retrieve(
-                $this->resultId,
-                $this->currentHit,
-                $this->options
+            $this->resultId,
+            $this->currentHit,
+            $this->options
         );
     }
 

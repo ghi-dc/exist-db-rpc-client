@@ -12,9 +12,9 @@ class DOMResultSet extends ResultSet
     public function getNextResult()
     {
         $result = $this->client->retrieve(
-                $this->resultId,
-                $this->currentHit,
-                $this->options
+            $this->resultId,
+            $this->currentHit,
+            $this->options
         );
 
         ++$this->currentHit;

@@ -6,19 +6,15 @@ class Client
 {
     /**
      * The URI to the database instance inclusive of the port.
-     *
-     * @var
      */
     protected $uri;
 
     /**
      * The xml rpc client for the instance.
-     *
-     * @var
      */
     protected $client;
     protected $options;
-    protected $collection = null;
+    protected $collection;
 
     protected $query;
 
@@ -43,17 +39,19 @@ class Client
                     $options[$part] = $value;
                 }
             }
-        } else {
+        }
+        else {
             $options = $defaults;
             $this->uri = 'http://guest:guest@localhost:8080/exist/xmlrpc/';
         }
 
         if (isset($options['uri'])) {
             $this->uri = $options['uri'];
-        } else {
-            $this->uri = $options['protocol'].'://'
-                       .$options['user'].':'.$options['password'].'@'
-                       .$options['host'].':'.$options['port'].$options['path'];
+        }
+        else {
+            $this->uri = $options['protocol'] . '://'
+                       . $options['user'] . ':' . $options['password'] . '@'
+                       . $options['host'] . ':' . $options['port'] . $options['path'];
         }
 
         $this->client = null;
@@ -112,7 +110,7 @@ class Client
         }
 
         // $docName is relative, so prepend collection
-        return $this->collection.'/'.$docName;
+        return $this->collection . '/' . $docName;
     }
 
     protected function buildCollectionPath($collection)
@@ -147,7 +145,8 @@ class Client
             $val = $this->client->getDocument($this->buildDocumentPath($name), $parameters);
 
             return $val->getDecoded();
-        } catch (\fXmlRpc\Exception\FaultException $e) {
+        }
+        catch (\fXmlRpc\Exception\FaultException $e) {
             return false;
         }
     }
@@ -180,7 +179,8 @@ class Client
             $val = $this->client->getBinaryResource($this->buildDocumentPath($name));
 
             return $val->getDecoded();
-        } catch (\fXmlRpc\Exception\FaultException $e) {
+        }
+        catch (\fXmlRpc\Exception\FaultException $e) {
             return false;
         }
     }
@@ -306,18 +306,18 @@ class Client
      */
     public function storeBinary($data, $docName, $mimeType, $replace = false)
     {
-        return $this->client->storeBinary(\fXmlRpc\Value\Base64::serialize($data),
-                                          $this->buildDocumentPath($docName),
-                                          $mimeType,
-                                          $replace ? 1 : 0);
+        return $this->client->storeBinary(
+            \fXmlRpc\Value\Base64::serialize($data),
+            $this->buildDocumentPath($docName),
+            $mimeType,
+            $replace ? 1 : 0
+        );
     }
 
     /**
      * Remove a document from the database.
      *
      * @param docName path to the document to be removed
-     *
-     * @return
      */
     public function remove($docName)
     {
@@ -328,8 +328,6 @@ class Client
      * Remove an entire collection from the database.
      *
      * @param name path to the collection to be removed
-     *
-     * @return
      */
     public function removeCollection($name = null)
     {
@@ -340,8 +338,6 @@ class Client
      * Create a new collection on the database.
      *
      * @param name the path to the new collection
-     *
-     * @return
      */
     public function createCollection($name = null)
     {
