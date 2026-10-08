@@ -1,6 +1,6 @@
 <?php
 
-namespace ExistDB;
+namespace ExistDbRpc;
 
 class DOMResultSet extends ResultSet
 {
