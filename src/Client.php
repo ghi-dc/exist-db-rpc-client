@@ -2,23 +2,32 @@
 
 namespace ExistDbRpc;
 
+/**
+ * Client for interacting with an eXist-db instance via XML-RPC.
+ *
+ * See https://exist-db.org/exist/apps/doc/devguide_xmlrpc
+ * and https://github.com/eXist-db/exist/blob/develop/exist-core/src/main/java/org/exist/xmlrpc/RpcAPI.java
+ */
 class Client
 {
     /**
      * The URI to the database instance inclusive of the port.
      */
-    protected $uri;
+    protected string $uri;
 
     /**
      * The xml rpc client for the instance.
      */
-    protected $client;
-    protected $options;
-    protected $collection;
+    protected ?\fXmlRpc\Proxy $client;
+
+    /**
+     * The (optional) current collection context.
+     */
+    protected ?string $collection;
 
     protected $query;
 
-    public function __construct($options = null)
+    public function __construct(?array $options = null)
     {
         $defaults = [
             'protocol' => 'http',
@@ -69,12 +78,23 @@ class Client
         $this->client = new \fXmlRpc\Proxy($client);
     }
 
-    public function getUri()
+    /**
+     * Get the URI to the database instance.
+     *
+     * @return string the URI
+     */
+    public function getUri(): string
     {
         return $this->uri;
     }
 
-    public function setCollection($collection)
+    /**
+     * Set the current collection context.
+     *
+     * @param string|null $collection the collection path
+     */
+
+    public function setCollection(?string $collection): void
     {
         if (!empty($collection)) {
             $collection = rtrim($collection, '/');
@@ -83,12 +103,17 @@ class Client
         $this->collection = $collection;
     }
 
-    public function getCollection()
+    /**
+     * Get the current collection context.
+     *
+     * @return string|null the collection path
+     */
+    public function getCollection(): ?string
     {
         return $this->collection;
     }
 
-    protected function assureSerializeParameters($parameters)
+    protected function assureSerializeParameters(array $parameters): array
     {
         // [] gets serialized as array, so we we add one default parameters
         if (empty($parameters)) {
@@ -98,7 +123,14 @@ class Client
         return $parameters;
     }
 
-    protected function buildDocumentPath($docName)
+    /**
+     * Prepend the collection path to the document name if necessary.
+     *
+     * @param string $docName the document name
+     *
+     * @return string the full document path
+     */
+    protected function buildDocumentPath(string $docName): string
     {
         if (is_null($this->collection)) {
             return $docName;
@@ -113,7 +145,14 @@ class Client
         return $this->collection . '/' . $docName;
     }
 
-    protected function buildCollectionPath($collection)
+    /**
+     * Prepend the collection path to the collection name if necessary.
+     *
+     * @param string|null $collection the collection name
+     *
+     * @return string|null the full collection path
+     */
+    protected function buildCollectionPath(?string $collection): ?string
     {
         return !is_null($collection)
             ? $collection : $this->collection;
@@ -124,24 +163,26 @@ class Client
      *
      * @return string database version
      */
-    public function getVersion()
+    public function getVersion(): string
     {
+        // @phpstan-ignore method.notFound
         return $this->client->getVersion();
     }
 
     /**
      * Retrieve document by name.
      *
-     * @param name the document's name
-     * @param parameters map of parameters
+     * @param string $name       the document's name
+     * @param array  $parameters map of parameters
      *
-     * @return The document value
+     * @return mixed The document value
      */
-    public function getDocument($name, $parameters = [])
+    public function getDocument(string $name, array $parameters = []): mixed
     {
         $parameters = $this->assureSerializeParameters($parameters);
 
         try {
+            // @phpstan-ignore method.notFound
             $val = $this->client->getDocument($this->buildDocumentPath($name), $parameters);
 
             return $val->getDecoded();
@@ -154,28 +195,30 @@ class Client
     /**
      * Retrieve document by name.
      *
-     * @param name the document's name
-     * @param parameters map of parameters
+     * @param string     $docName    the document's name
+     * @param array|null $parameters map of parameters
      *
-     * @return The document value
+     * @return string|null The document value
      */
-    public function getDocumentAsString($docName, $parameters = [])
+    public function getDocumentAsString(string $docName, ?array $parameters = []): ?string
     {
         $parameters = $this->assureSerializeParameters($parameters);
 
+        // @phpstan-ignore method.notFound
         return $this->client->getDocumentAsString($this->buildDocumentPath($docName), $parameters);
     }
 
     /**
      * Retrieve binary resource by name.
      *
-     * @param name
+     * @param string $name the resource's name
      *
-     * @return The resource content
+     * @return mixed The resource content
      */
-    public function getBinaryResource($name)
+    public function getBinaryResource(string $name): mixed
     {
         try {
+            // @phpstan-ignore method.notFound
             $val = $this->client->getBinaryResource($this->buildDocumentPath($name));
 
             return $val->getDecoded();
@@ -189,123 +232,182 @@ class Client
      * Does the document identified by name exist in the
      * repository?
      *
-     * @param name of the document
+     * @param string $name The name of the document
      *
-     * @return true or false
+     * @return bool true if the document exists, false otherwise
      */
-    public function hasDocument($name)
+    public function hasDocument(string $name): bool
     {
+        // @phpstan-ignore method.notFound
         return $this->client->hasDocument($this->buildDocumentPath($name));
     }
 
     /**
      * Get a list of all documents contained in $collection or (if null) the database.
+     *
+     * @param string|null $collection the collection name
+     *
+     * @return array a list of documents contained in the specified collection or the database if null
      */
-    public function getDocumentListing($collection = null)
+    public function getDocumentListing(?string $collection = null): array
     {
         $collectionPath = $this->buildCollectionPath($collection);
 
         return is_null($collectionPath)
-            ? $this->client->getDocumentListing()
-            : $this->client->getDocumentListing($collectionPath);
+            ? $this->client->getDocumentListing()                   // @phpstan-ignore method.notFound
+            : $this->client->getDocumentListing($collectionPath)    // @phpstan-ignore method.notFound
+        ;
     }
 
     /**
      * Does the collection identified by name exist in the
      * repository?
      *
-     * @param name of the collection
+     * @param string|null $name of the collection
      *
-     * @return true or false
+     * @return bool true if the collection exists, false otherwise
      */
-    public function hasCollection($name = null)
+    public function hasCollection(?string $name = null): bool
     {
+        // @phpstan-ignore method.notFound
         return $this->client->hasCollection($this->buildCollectionPath($name));
     }
 
     /**
      * Get a list of (sub)collections in $collection.
+     *
+     * @param string|null $name of the collection
+     *
+     * @return mixed a list of (sub)collections contained in the specified collection
      */
-    public function getCollectionListing($collection = null)
+    public function getCollectionListing(?string $name = null): mixed
     {
-        return $this->client->getCollectionListing($this->buildCollectionPath($collection));
+        // @phpstan-ignore method.notFound
+        return $this->client->getCollectionListing($this->buildCollectionPath($name));
     }
 
-    public function existsAndCanOpenCollection($name = null)
+    /**
+     * Determines whether a Collection exists in the database and whether the
+     * user may open the collection.
+     *
+     * @param string|null $name of the collection
+     *
+     * @return bool returns true if the collection exists and can be opened, false otherwise
+     */
+    public function existsAndCanOpenCollection(?string $name = null): bool
     {
+        // @phpstan-ignore method.notFound
         return $this->client->existsAndCanOpenCollection($this->buildCollectionPath($name));
     }
 
     /**
      * Describe a collection: returns a struct with the following fields:.
      *
-     * <pre>
-     *	name				The name of the collection
+     * @param string|null $name of the collection
      *
-     *	owner				The name of the user owning the collection.
+     * @return mixed A struct describing the collection.
      *
-     *	group				The group owning the collection.
-     *
-     *	permissions	The permissions that apply to this collection (int value)
-     *
+     *	name			The name of the collection
+     *	owner			The name of the user owning the collection.
+     *	group			The group owning the collection.
+     *	permissions	    The permissions that apply to this collection (int value)
      *	created			The creation date of this collection (long value)
-     *
      *	collections		An array containing the names of all subcollections.
-     *
      *	documents		An array containing a struct for each document in the collection.
-     * </pre>
      */
-    public function getCollectionDesc($collection = null)
+    public function getCollectionDesc(?string $name = null): mixed
     {
-        return $this->client->getCollectionDesc($this->buildCollectionPath($collection));
+        // @phpstan-ignore method.notFound
+        return $this->client->getCollectionDesc($this->buildCollectionPath($name));
     }
 
     /**
      * Describe a collection: similar to getCollectionDesc but without documents.
+     *
+     * @param string|null $name of the collection
+     *
+     * @return mixed a struct describing the collection
      */
-    public function describeCollection($collection = null)
+    public function describeCollection(?string $name = null): mixed
     {
-        return $this->client->describeCollection($this->buildCollectionPath($collection));
+        // @phpstan-ignore method.notFound
+        return $this->client->describeCollection($this->buildCollectionPath($name));
     }
 
     /**
      * Describe a resource.
+     *
+     * @param string $resource the path to the resource
+     *
+     * @return mixed returns a struct describing a specified resource
      */
-    public function describeResource($resource)
+    public function describeResource(string $resource): mixed
     {
+        // @phpstan-ignore method.notFound
         return $this->client->describeResource($this->buildDocumentPath($resource));
     }
 
     /**
      * Returns the number of resources in the collection identified by
-     * collectionName.
+     * collection.
+     *
+     * @param string|null $collection the name of the collection
+     *
+     * @return int the number of resources in the collection
      */
-    public function getResourceCount($collectionName = null)
+    public function getResourceCount(?string $collection = null): int
     {
-        return $this->client->getResourceCount($this->buildCollectionPath($collectionName));
+        // @phpstan-ignore method.notFound
+        return $this->client->getResourceCount($this->buildCollectionPath($collection));
     }
 
     /**
-     * TODO: maybe add Date created, Date modified as optional.
+     * Parse an XML document and store it into the database. The document will
+     * later be identified by <code>docName</code>. Some xmlrpc clients seem to
+     * have problems with character encodings when sending xml content. To avoid
+     * this, parse() accepts the xml document content as byte[]. If
+     * <code>overwrite</code> is &gt;0, an existing document with the same name
+     * will be replaced by the new document.
+     *
+     * @param string $xml       the document data
+     * @param string $docName   the path where the document will be stored
+     * @param bool   $overwrite whether to overwrite an existing document
+     *
+     * @return bool true, if the document is valid XML
      */
-    public function parse($xml, $docName, $overwrite = false)
+    public function parse(string $xml, string $docName, bool $overwrite = false): bool
     {
+        // @phpstan-ignore method.notFound
         return $this->client->parse($xml, $this->buildDocumentPath($docName), $overwrite ? 1 : 0);
     }
 
     /**
      * An Alias for parse().
+     *
+     * @param string $xml       the document data
+     * @param string $docName   the path where the document will be stored
+     * @param bool   $overwrite whether to overwrite an existing document
+     *
+     * @return bool true, if the document is valid XML
      */
-    public function storeDocument($xml, $docName, $overwrite = false)
+    public function storeDocument(string $xml, string $docName, bool $overwrite = false): bool
     {
         return $this->parse($xml, $docName, $overwrite);
     }
 
     /**
-     * TODO: maybe add Date created, Date modified as optional.
+     * Store data as a binary resource.
+     *
+     * @param mixed  $data     the data to be stored
+     * @param string $docName  the path to the new document
+     * @param string $mimeType the mimeType to check for
+     * @param bool   $replace  if true, an old document with the same path will be replaced
+     *
+     * @return bool true, if the binary data was successfully stored
      */
-    public function storeBinary($data, $docName, $mimeType, $replace = false)
+    public function storeBinary($data, string $docName, string $mimeType, bool $replace = false): bool
     {
+        // @phpstan-ignore method.notFound
         return $this->client->storeBinary(
             \fXmlRpc\Value\Base64::serialize($data),
             $this->buildDocumentPath($docName),
@@ -317,47 +419,77 @@ class Client
     /**
      * Remove a document from the database.
      *
-     * @param docName path to the document to be removed
+     * @param string $docName path to the document to be removed
+     *
+     * @return bool true, if the document could be removed
      */
-    public function remove($docName)
+    public function remove(string $docName): bool
     {
+        // @phpstan-ignore method.notFound
         return $this->client->remove($this->buildDocumentPath($docName));
     }
 
     /**
      * Remove an entire collection from the database.
      *
-     * @param name path to the collection to be removed
+     * @param string|null $name path to the collection to be removed
+     *
+     * @return bool true, if the collection could be removed
      */
-    public function removeCollection($name = null)
+    public function removeCollection(?string $name = null): bool
     {
+        // @phpstan-ignore method.notFound
         return $this->client->removeCollection($this->buildCollectionPath($name));
     }
 
     /**
      * Create a new collection on the database.
      *
-     * @param name the path to the new collection
+     * @param string|null $name the path to the new collection
+     *
+     * @return bool true, if the collection could be created
      */
-    public function createCollection($name = null)
+    public function createCollection(?string $name = null): bool
     {
+        // @phpstan-ignore method.notFound
         return $this->client->createCollection($this->buildCollectionPath($name));
     }
 
-    public function getCreationDate($collectionName = null)
+    /**
+     * Get the creation date of a collection.
+     *
+     * @param string|null $collectionName the name of the collection
+     *
+     * @return string the creation date of the collection
+     */
+    public function getCreationDate(?string $collectionName = null): string
     {
+        // @phpstan-ignore method.notFound
         return $this->client->getCreationDate($this->buildCollectionPath($collectionName));
     }
 
-    public function getTimestamps($documentName = null)
+    /**
+     * Get the timestamps of a document.
+     *
+     * @param string|null $documentName the name of the document
+     *
+     * @return array the timestamps of the document
+     */
+    public function getTimestamps(?string $documentName = null): array
     {
+        // @phpstan-ignore method.notFound
         return $this->client->getTimestamps($this->buildDocumentPath($documentName));
     }
 
     /**
      * Prepare the execution of an XPath/XQuery.
+     *
+     * @param string      $xql        the XPath/XQuery to be executed
+     * @param string|null $collection the collection context for the query
+     *
+     * @return Query the prepared query object
      */
-    public function prepareQuery($xql, $collection = null)
+    public function prepareQuery(string $xql, ?string $collection = null): Query
     {
         $query = new Query($xql, $this->client, $this->buildCollectionPath($collection));
 
@@ -366,48 +498,81 @@ class Client
 
     /**
      * Determine the permissions of a resource.
+     *
+     * @param string $resource the resource for which to determine permissions
+     *
+     * @return array the permissions of the resource
      */
-    public function getPermissions($resource)
+    public function getPermissions(string $resource): array
     {
+        // @phpstan-ignore method.notFound
         return $this->client->getPermissions($this->buildDocumentPath($resource));
     }
 
     /**
      * Get the members of a group.
+     *
+     * @param string $groupName the name of the group
+     *
+     * @return array the members of the group
      */
-    public function getGroupMembers($groupName)
+    public function getGroupMembers(string $groupName): array
     {
+        // @phpstan-ignore method.notFound
         return $this->client->getGroupMembers($groupName);
     }
 
     /**
      * Get all the groups.
+     *
+     * @return array the list of all groups
      */
-    public function getGroups()
+    public function getGroups(): array
     {
+        // @phpstan-ignore method.notFound
         return $this->client->getGroups();
     }
 
-    public function getGroup($name)
+    public function getGroup(string $name): array
     {
+        // @phpstan-ignore method.notFound
         return $this->client->getGroup($name);
     }
 
     /**
      * Get all the accounts.
+     *
+     * @return array the list of all accounts
      */
     public function getAccounts()
     {
+        // @phpstan-ignore method.notFound
         return $this->client->getAccounts();
     }
 
-    public function getAccount($name)
+    /**
+     * Get the details of an account.
+     *
+     * @param string $name the name of the account
+     *
+     * @return array the details of the account
+     */
+    public function getAccount(string $name): array
     {
+        // @phpstan-ignore method.notFound
         return $this->client->getAccount($name);
     }
 
-    public function reindexCollection($name)
+    /**
+     * Reindex a collection.
+     *
+     * @param string|null $name the name of the collection to reindex
+     *
+     * @return bool the result of the reindex operation
+     */
+    public function reindexCollection(?string $name = null): bool
     {
+        // @phpstan-ignore method.notFound
         return $this->client->reindexCollection($this->buildCollectionPath($name));
     }
 
